@@ -5,11 +5,13 @@
 import { screen, waitFor } from "@testing-library/dom";
 import BillsUI from "../views/BillsUI.js";
 import { bills } from "../fixtures/bills.js";
-import { ROUTES_PATH } from "../constants/routes.js";
+import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import mockStore from "../__mocks__/store";
 import router from "../app/Router.js";
 import { sortByDate } from "../app/utils.js";
+import Bills from "../containers/Bills.js";
+import userEvent from "@testing-library/user-event";
 
 jest.mock("../app/store", () => mockStore);
 
@@ -45,6 +47,37 @@ describe("Given I am connected as an employee", () => {
       const antiChrono = (a, b) => (a < b ? 1 : -1);
       const datesSorted = [...dates].sort(antiChrono);
       expect(dates).toEqual(datesSorted);
+    });
+    describe("Given I am connected as Employee and I am on Bill page", () => {
+      describe("When I click on the eye icon eye", () => {
+        test("A modal should open", () => {
+          Object.defineProperty(window, "localStorage", {
+            value: localStorageMock,
+          });
+          window.localStorage.setItem(
+            "user",
+            JSON.stringify({ type: "Employee" })
+          );
+          const onNavigate = (pathname) => {
+            document.body.innerHTML = ROUTES({ pathname });
+          };
+          const store = null;
+          const bills = new Bills({
+            document,
+            onNavigate,
+            store,
+            localStorage: window.localStorage,
+          });
+          const eye = screen.getAllByTestId("icon-eye")[0];
+          const handleClickIconEye = jest.fn(bills.handleClickIconEye(eye));
+          eye.addEventListener("click", handleClickIconEye);
+          userEvent.click(eye);
+          expect(handleClickIconEye).toHaveBeenCalled();
+
+          const modal = screen.getByTestId("modaleFileEmployee");
+          expect(modal).toBeTruthy();
+        });
+      });
     });
     describe("Given I am a user connected as Employee", () => {
       describe("When I navigate to Bills", () => {
