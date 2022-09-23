@@ -50,7 +50,7 @@ describe("Given I am connected as an employee", () => {
     });
     describe("Given I am connected as Employee and I am on Bill page", () => {
       describe("When I click on the eye icon eye", () => {
-        test("A modal should open", () => {
+        beforeEach(() => {
           Object.defineProperty(window, "localStorage", {
             value: localStorageMock,
           });
@@ -58,6 +58,8 @@ describe("Given I am connected as an employee", () => {
             "user",
             JSON.stringify({ type: "Employee" })
           );
+        });
+        test("A modal should open", () => {
           const onNavigate = (pathname) => {
             document.body.innerHTML = ROUTES({ pathname });
           };
@@ -76,6 +78,27 @@ describe("Given I am connected as an employee", () => {
 
           const modal = screen.getByTestId("modaleFileEmployee");
           expect(modal).toBeTruthy();
+        });
+      });
+      describe("When I click on new bill", () => {
+        test("It should render new bill page", () => {
+          const onNavigate = (pathname) => {
+            document.body.innerHTML = ROUTES({ pathname });
+          };
+          const store = null;
+          const bills = new Bills({
+            document,
+            onNavigate,
+            store,
+            localStorage: window.localStorage,
+          });
+          const newBillButton = screen.getByTestId("btn-new-bill");
+          const handleClickNewBill = jest.fn(bills.handleClickNewBill());
+          newBillButton.addEventListener("click", handleClickNewBill);
+          userEvent.click(newBillButton);
+          expect(handleClickNewBill).toHaveBeenCalled();
+
+          expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
         });
       });
     });
