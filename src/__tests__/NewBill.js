@@ -51,4 +51,54 @@ describe("Given I am connected as an employee", () => {
       expect(fileInput.files[0]).toStrictEqual(file);
     });
   });
+  test("I should be able to submit a new bill and navigate back to bill page", () => {
+    Object.defineProperty(window, "localStorage", {
+      value: localStorageMock,
+    });
+    window.localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email: "a@a",
+      })
+    );
+    const store = mockStore;
+    const onNavigate = (pathname) => {
+      document.body.innerHTML = ROUTES({ pathname });
+    };
+    const newBill = new NewBill({
+      document,
+      onNavigate,
+      store,
+      localStorage: window.localStorage,
+    });
+
+    const submitButton = screen.getByText("Envoyer");
+    const form = screen.getByTestId("form-new-bill");
+
+    const expenseTypeSelect = screen.getByTestId("expense-type");
+    const expenseNameInput = screen.getByTestId("expense-name");
+    const datePicker = screen.getByTestId("datepicker");
+    const amout = screen.getByTestId("amount");
+    const vat = screen.getByTestId("vat");
+    const pct = screen.getByTestId("pct");
+    const commentary = screen.getByTestId("commentary");
+    const file = screen.getByTestId("file");
+
+    const handleSubmit = jest.fn((e) => newBill.handleSubmit(e));
+    const handleChangeFile = jest.fn((e) => newBill.handleChangeFile(e));
+    file.addEventListener("change", (e) => handleChangeFile(e));
+    form.addEventListener("submit", (e) => handleSubmit(e));
+
+    userEvent.selectOptions(expenseTypeSelect, "Transports");
+    userEvent.type(expenseNameInput, "Test");
+    userEvent.type(datePicker, "23/09/2022");
+    userEvent.type(amout, "3000");
+    userEvent.type(vat, "300");
+    userEvent.type(pct, "30");
+    userEvent.type(commentary, "Test du commentaire");
+
+    userEvent.click(submitButton);
+    expect(handleSubmit).toHaveBeenCalled();
+    expect(screen.getByText("Mes notes de frais")).toBeTruthy();
+  });
 });
