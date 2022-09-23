@@ -11,12 +11,47 @@ import { ROUTES } from "../constants/routes.js";
 import userEvent from "@testing-library/user-event";
 
 jest.mock("../app/store", () => mockStore);
+window.alert = jest.fn();
 
 const file = new File(["bobcat"], "bobcat.jpg", {
   type: "image/jpg",
 });
 
 describe("Given I am connected as an employee", () => {
+  describe("When I upload a non image file", () => {
+    test("an alert should be displayed", () => {
+      Object.defineProperty(window, "localStorage", {
+        value: localStorageMock,
+      });
+      window.localStorage.setItem(
+        "user",
+        JSON.stringify({
+          email: "a@a",
+        })
+      );
+      const store = mockStore;
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+      const html = NewBillUI();
+      document.body.innerHTML = html;
+      const newBill = new NewBill({
+        document,
+        onNavigate,
+        store,
+        localStorage: window.localStorage,
+      });
+      const handleChangeFile = jest.fn((e) => newBill.handleChangeFile(e));
+      const fileInput = screen.getByTestId("file");
+      fileInput.addEventListener("change", (e) => handleChangeFile(e));
+      const badExtensionFile = new File(["bobcat"], "bobcat.pdf", {
+        type: "application/pdf",
+      });
+      userEvent.upload(fileInput, badExtensionFile);
+      expect(handleChangeFile).toHaveBeenCalled();
+      expect(window.alert).toHaveBeenCalled();
+    });
+  });
   describe("When I am on NewBill Page", () => {
     test("Then I should see new bill form ", () => {
       const html = NewBillUI();
@@ -37,6 +72,8 @@ describe("Given I am connected as an employee", () => {
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname });
       };
+      const html = NewBillUI();
+      document.body.innerHTML = html;
       const newBill = new NewBill({
         document,
         onNavigate,
@@ -65,6 +102,8 @@ describe("Given I am connected as an employee", () => {
     const onNavigate = (pathname) => {
       document.body.innerHTML = ROUTES({ pathname });
     };
+    const html = NewBillUI();
+    document.body.innerHTML = html;
     const newBill = new NewBill({
       document,
       onNavigate,
