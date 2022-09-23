@@ -51,7 +51,7 @@ describe("Given I am connected as an employee", () => {
       expect(fileInput.files[0]).toStrictEqual(file);
     });
   });
-  test("I should be able to submit a new bill and navigate back to bill page", () => {
+  test("I should be able to POST a new bill and navigate back to bill page", () => {
     Object.defineProperty(window, "localStorage", {
       value: localStorageMock,
     });
