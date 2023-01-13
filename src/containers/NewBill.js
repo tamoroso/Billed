@@ -18,11 +18,11 @@ export default class NewBill {
     new Logout({ document, localStorage, onNavigate });
   }
   handleChangeFile = (e) => {
+    const input = this.document.querySelector(`input[data-testid="file"]`);
     try {
       e.preventDefault();
       const allowedFileExtensionRegex = /(jpeg|jpg|png)/g;
-      const file = this.document.querySelector(`input[data-testid="file"]`)
-        .files[0];
+      const file = input.files[0];
 
       const filePath = e.target.value.split(/\\/g);
       const fileName = filePath[filePath.length - 1];
@@ -57,6 +57,7 @@ export default class NewBill {
         .catch((error) => console.error(error));
     } catch (e) {
       window.alert(e.message);
+      input.value = "";
     }
   };
   handleSubmit = (e) => {
